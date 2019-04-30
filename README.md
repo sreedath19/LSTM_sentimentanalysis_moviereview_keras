@@ -11,3 +11,10 @@ The Deep neural network is trained and evaluated using training and testing data
 Input text is obtained
 The text is preprocessed and a textvector is made from idmatrix
 The textvector is fed to the neural network and the sentiment score is obtained
+
+
+Pre Requisites for the repository is :
+  tensorflow
+  keras
+  nltk
+  numpy
