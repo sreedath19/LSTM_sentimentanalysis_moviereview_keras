@@ -1,5 +1,4 @@
 import numpy as np
-#from keras.datasets import imdb
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
@@ -58,47 +57,70 @@ model.load_weights(".\\Models\\predicter.h5")
 
 review = input('Enter the input text')
 
+neg_flag = 0
+
+word_flag = 1
+
+sentance = []
+def prep(reviews):
+	for w in reviews:
+		if w not in stop_words:
+			sentance.append(w) 
+	final_sent =  [lemmatizer.lemmatize(i) for i in sentance]
+	words = final_sent
+	x = 0
+	for k in words:
+		try:
+			words[x] = int(assignment(words[x]))
+		except KeyError:
+			words[x] = 2
+		x = x+1
+	print(words)
+	words = sequence.pad_sequences([words],truncating='pre', padding='pre', maxlen=80)
+	print(words)
+	reviews = words
+	return(reviews)
+
 
 
 review = cleanSentences(review)
 
 review = review.split()
-sentance = []
-for w in review:
-	if w not in stop_words:
-		sentance.append(w) 
-final_sent =  [lemmatizer.lemmatize(i) for i in sentance]
-words = final_sent
-x = 0
-for k in words:
-	try:
-		words[x] = int(assignment(words[x]))
-	except KeyError:
-		words[x] = 2
-	x = x+1
-print(words)
-words = sequence.pad_sequences([words],truncating='pre', padding='pre', maxlen=80)
-print(words)
-review = words
-print(review)
-#d = imdb.get_word_index()
-#words = final_sent
-#review2 = []
-#for word in words:
-#  if word not in d: 
-#    review2.append(2)
-#  else:
-#    review2.append(d[word]+3) 
+pred2 = 0
+j = 0
+for i in review:
+	j = j+1
+	if i == 'not' or i=='no' or i =='never':
+		neg_flag = 1
+		res = review[j:]
+		print(res)
+		reviews = prep(res)
+		print(reviews)
+		pred = model.predict(reviews)
+		pred2 = pred2+(word_flag*(float(pred[0][0])))
+		if pred2 >= .2:
+			word_flag = 1
+		else:
+			word_flag = -1
+		print(pred2)
+	else:
+		continue 
 
-#review2 = sequence.pad_sequences([review],truncating='pre', padding='pre', maxlen=80)
+
+review = prep(review)
 prediction = model.predict(review)
-print("Prediction (0 = negative, 1 = positive) = ", end="")
-print("%0.4f" % prediction[0][0])
+prediction2 = float(prediction[0][0])
+print(prediction2)
+if neg_flag == 1:
+	prediction2 = prediction2-pred2
+else:
+	prediction2 = prediction2
 
-#model.load_weights(".\\Models\\imdb_model.h5") 
-#prediction = model.predict(review2)
-#print("Prediction (0 = negative, 1 = positive) = ", end="")
-#print("%0.4f" % prediction[0][0])
+
+print("Prediction (0 = negative, 1 = positive) = ", end="")
+print("%0.4f" % prediction2)
+
+
 
 lstm_out = K.function([model.inputs[0], 
                         K.learning_phase()], 
