@@ -1,4 +1,5 @@
 import numpy as np
+#from keras.datasets import imdb
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
@@ -15,17 +16,15 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from keras.preprocessing import sequence
-from sklearn.feature_extraction.text import HashingVectorizer		
+import nltk 
+from nltk.corpus import wordnet 		
 import numpy as np
 import re
 import csv
 stop_words=set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
-
 strip_special_chars = re.compile("[^A-Za-z0-9 ]+")
-vec = HashingVectorizer()
-
 
 def cleanSentences(string):
     string = string.lower().replace("<br />", " ")
@@ -55,70 +54,50 @@ print(model.summary())
 
 model.load_weights(".\\Models\\predicter.h5")
 
-review = input('Enter the input text')
-
-neg_flag = 0
-
-word_flag = 1
-
-sentance = []
-def prep(reviews):
-	for w in reviews:
-		if w not in stop_words:
-			sentance.append(w) 
-	final_sent =  [lemmatizer.lemmatize(i) for i in sentance]
-	words = final_sent
-	x = 0
-	for k in words:
-		try:
-			words[x] = int(assignment(words[x]))
-		except KeyError:
-			words[x] = 2
-		x = x+1
-	print(words)
-	words = sequence.pad_sequences([words],truncating='pre', padding='pre', maxlen=80)
-	print(words)
-	reviews = words
-	return(reviews)
+review = input('Enter the input text    :  ')
+antonyms = []
+def opposite(string):
+	for syn in wordnet.synsets(string): 
+		for l in syn.lemmas(): 
+			if l.antonyms(): 
+				antonyms.append(l.antonyms()[0].name())
+	return(antonyms[0])
 
 
+flag = 0
 
 review = cleanSentences(review)
 
 review = review.split()
-pred2 = 0
-j = 0
-for i in review:
-	j = j+1
-	if i == 'not' or i=='no' or i =='never':
-		neg_flag = 1
-		res = review[j:]
-		print(res)
-		reviews = prep(res)
-		print(reviews)
-		pred = model.predict(reviews)
-		pred2 = pred2+(word_flag*(float(pred[0][0])))
-		if pred2 >= .2:
-			word_flag = 1
-		else:
-			word_flag = -1
-		print(pred2)
-	else:
-		continue 
+sentance = []
+for w in review:
+	if w not in stop_words:
+		if flag ==1:
+			w = opposite(w)
+			flag =0
+		sentance.append(w) 
+	elif w in {'no','not','never'}:
+		flag = 1
+final_sent =  [lemmatizer.lemmatize(i) for i in sentance]
+words = final_sent
 
+print(words)
+x = 0
+for k in words:
+	try:
+		words[x] = int(assignment(words[x]))
+	except KeyError:
+		words[x] = 2
+	x = x+1
+print(words)
+words = sequence.pad_sequences([words],truncating='pre', padding='pre', maxlen=80)
+print(words)
+review = words
+print(review)
 
-review = prep(review)
 prediction = model.predict(review)
-prediction2 = float(prediction[0][0])
-print(prediction2)
-if neg_flag == 1:
-	prediction2 = prediction2-pred2
-else:
-	prediction2 = prediction2
-
-
 print("Prediction (0 = negative, 1 = positive) = ", end="")
-print("%0.4f" % prediction2)
+print("%0.4f" % prediction[0][0])
 
 
 
