@@ -1,3 +1,7 @@
+import nltk
+nltk.download('stopwords')
+import nltk
+nltk.download('wordnet')
 import numpy as np
 #from keras.datasets import imdb
 from keras.models import Sequential
@@ -16,8 +20,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from keras.preprocessing import sequence
-import nltk 
-from nltk.corpus import wordnet 		
+		
 import numpy as np
 import re
 import csv
@@ -52,19 +55,11 @@ model.add(layers.Dense(units=1, kernel_initializer=init,activation='sigmoid'))
 model.compile(loss='binary_crossentropy', optimizer=simple_adam,metrics=['acc'])
 print(model.summary())
 
-model.load_weights(".\\Models\\predicter.h5")
+model.load_weights("._Models_predicter.h5")
 
 review = input('Enter the input text    :  ')
-antonyms = []
-def opposite(string):
-	for syn in wordnet.synsets(string): 
-		for l in syn.lemmas(): 
-			if l.antonyms(): 
-				antonyms.append(l.antonyms()[0].name())
-	return(antonyms[0])
 
 
-flag = 0
 
 review = cleanSentences(review)
 
@@ -72,16 +67,9 @@ review = review.split()
 sentance = []
 for w in review:
 	if w not in stop_words:
-		if flag ==1:
-			w = opposite(w)
-			flag =0
 		sentance.append(w) 
-	elif w in {'no','not','never'}:
-		flag = 1
 final_sent =  [lemmatizer.lemmatize(i) for i in sentance]
 words = final_sent
-
-print(words)
 x = 0
 for k in words:
 	try:
